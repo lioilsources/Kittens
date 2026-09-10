@@ -26,7 +26,7 @@ final class Replay {
   factory Replay.fromJson(Map<String, Object?> j) {
     final version = (j['version'] as num?)?.toInt();
     if (j['format'] != 'fuse-replay' || version == null) {
-      throw const FormatException('Not a fuse replay');
+      throw const FormatException('Not a Kittens replay');
     }
     if (version > formatVersion) {
       throw FormatException('Replay version $version is newer than supported');

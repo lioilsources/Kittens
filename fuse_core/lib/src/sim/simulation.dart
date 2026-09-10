@@ -1,10 +1,10 @@
 import '../bots/bot.dart';
 import '../commands.dart';
 import '../events.dart';
+import '../host/host_loop.dart';
 import '../model/game_state.dart';
 import '../model/setup.dart';
 import '../replay/replay.dart';
-import '../view/player_view.dart';
 
 final class SimulationResult {
   const SimulationResult({
@@ -21,8 +21,8 @@ final class SimulationResult {
   bool get finished => game.state.isOver;
 }
 
-/// Discrete-event headless host: bots play against each other in game time
-/// with no real clock. The same loop will drive puppet mode later.
+/// Headless host: bots play against each other in discrete game time, no
+/// real clock. Live sessions use the same [HostLoop] driven by a real clock.
 final class Simulation {
   Simulation({
     required this.setup,
@@ -38,50 +38,16 @@ final class Simulation {
   onStep;
 
   SimulationResult run() {
-    final game = RecordedGame(setup);
-    final muted = <String>{};
-    var rejected = 0;
+    final loop = HostLoop(RecordedGame(setup), bots: bots);
     var steps = 0;
-
-    while (!game.state.isOver && steps < maxSteps) {
+    while (!loop.state.isOver && steps < maxSteps) {
       steps++;
-      final state = game.state;
-      final deadline = state.nextDeadline!;
-
-      BotIntent? best;
-      String? bestId;
-      for (final seat in state.players) {
-        final bot = bots[seat.id];
-        if (bot == null || muted.contains(seat.id)) continue;
-        final intent = bot.plan(PlayerView.of(state, seat.id));
-        if (intent == null) continue;
-        final at = intent.at < state.lastTs ? state.lastTs : intent.at;
-        if (best == null || at < best.at) {
-          best = BotIntent(at, intent.command);
-          bestId = seat.id;
-        }
-      }
-
-      final Command command;
-      if (best == null || deadline < best.at) {
-        command = TimerExpired(serverTs: deadline);
-      } else {
-        command = best.command.stamped(best.at);
-      }
-      final step = game.apply(command);
-      onStep?.call(step.state, command, step.events);
-
-      final wasRejected = step.events.any((e) => e is CommandRejected);
-      if (wasRejected && bestId != null && command is! TimerExpired) {
-        rejected++;
-        muted.add(bestId);
-      } else {
-        muted.clear();
-      }
+      final s = loop.stepNext()!;
+      onStep?.call(s.step.state, s.command, s.step.events);
     }
     return SimulationResult(
-      game: game,
-      rejectedBotCommands: rejected,
+      game: loop.game,
+      rejectedBotCommands: loop.rejectedBotCommands,
       steps: steps,
     );
   }

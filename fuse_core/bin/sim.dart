@@ -173,7 +173,7 @@ void _printReport(
 
   final out = StringBuffer()
     ..writeln(
-      'Fuse sim — $games her, ${seats.length} hráči '
+      'Kittens sim — $games her, ${seats.length} hráči '
       '(${(elapsedMs / 1000).toStringAsFixed(1)} s)',
     )
     ..writeln(

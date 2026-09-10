@@ -29,9 +29,16 @@ final class ManualClock implements GameClock {
 /// Real-time clock with adjustable speed (0.1×–2× in the debug panel) and
 /// pause. Game time is continuous across speed changes and pauses.
 final class ScaledClock implements GameClock {
-  ScaledClock({int Function()? realMicros, double speed = 1.0})
-    : _realMicros = realMicros ?? _stopwatchMicros(),
-      _speed = _checkSpeed(speed) {
+  /// [startMs] lets a loaded replay continue at its own game time.
+  ScaledClock({
+    int Function()? realMicros,
+    double speed = 1.0,
+    int startMs = 0,
+    bool paused = false,
+  }) : _realMicros = realMicros ?? _stopwatchMicros(),
+       _speed = _checkSpeed(speed) {
+    _paused = paused;
+    _anchorGameMicros = startMs * 1000;
     _anchorReal = _realMicros();
   }
 

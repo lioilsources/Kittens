@@ -1,0 +1,17 @@
+{
+  "name": "Duch v kole",
+  "description": "Jsi duch. Bot 1 odpálí bombu na hráče 2. Klepni na Ne! ducha a bomba se vrátí k Botovi 1. Jednou za kolo, bez karty.",
+  "viewAs": "p3",
+  "speed": 0.4,
+  "seed": 8,
+  "seats": [
+    {"id": "p1", "name": "Bot 1", "mode": "bot", "reaction": "slow"},
+    {"id": "p2", "name": "Bot 2", "mode": "bot", "reaction": "slow"},
+    {"id": "p3", "name": "Duch", "mode": "human"}
+  ],
+  "commands": [
+    {"type": "debugSetLives", "playerId": "p3", "lives": 0, "serverTs": 0},
+    {"type": "debugGiveCard", "playerId": "p1", "code": "DETONATE", "serverTs": 0},
+    {"type": "debugSetBomb", "fuse": 1, "serverTs": 0}
+  ]
+}

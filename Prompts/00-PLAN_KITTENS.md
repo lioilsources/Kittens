@@ -1,4 +1,4 @@
-# PLAN.md — Speed karetní hra (pracovní název: **Fuse**)
+# PLAN.md — Speed karetní hra **Kittens**
 
 ## 1. Cíl
 Mobilní karetní hra ve stylu Výbušných koťátek, kde rozhoduje **rychlost hodu správné karty**.
@@ -160,11 +160,12 @@ Jedna aplikace, `LoopbackTransport`, N hráčů v jednom procesu. Já ovládám 
 - ➡️ `fuse_core/` – interpretace nejasných pravidel viz `fuse_core/README.md`
 
 **Fáze 1 – feel na jednom telefonu**
-- [ ] table UI, ruka, swipe-to-throw s čárou, timer ring, haptika
-- [ ] LoopbackTransport + HostSession
-- [ ] puppet mode: přepínač pohledu, human/bot/paused
-- [ ] DebugPanel (clock speed, pause/step, vnucení karty, replay)
-- [ ] scénáře
+- [x] table UI, ruka, swipe-to-throw s čárou, timer ring, haptika
+- [x] LoopbackTransport + HostSession
+- [x] puppet mode: přepínač pohledu, human/bot/paused
+- [x] DebugPanel (clock speed, pause/step, vnucení karty, replay)
+- [x] scénáře
+- ➡️ `app/` – ovládání, architektura a rychlý start viz `app/README.md`
 - ✅ Výstup: rozhodnutí o `turnLimit`, odstupňování dobírání, zda Kradež zůstává
 
 **Fáze 2 – akční karty a reakce**

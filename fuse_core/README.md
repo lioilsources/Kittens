@@ -1,6 +1,6 @@
 # fuse_core
 
-Čistý Dart balíček s herní logikou hry **Fuse** (viz `../Prompts/00-PLAN_KITTENS.md`).
+Čistý Dart balíček s herní logikou hry **Kittens** (viz `../Prompts/00-PLAN_KITTENS.md`).
 Žádná závislost na Flutteru → unit testy, CLI simulace, deterministický replay.
 
 ```sh
@@ -25,7 +25,8 @@ dart run fuse_core:sim --help                               # limity, prahy, IQ/
 | `lib/src/clock/game_clock.dart` | `ManualClock` (testy/sim), `ScaledClock` (rychlost 0,1–2×, pauza, krok) |
 | `lib/src/bots/` | `Bot` = čistá funkce `(PlayerView) → BotIntent?`; `BasicBot` s IQ `smart/firstValid/sloppy` a reakční dobou |
 | `lib/src/replay/replay.dart` | `Replay` (setup + seed + log commandů, JSON), `RecordedGame` (stav + log) |
-| `lib/src/sim/` | `Simulation` (headless host, diskrétní čas) + `GameStats`/`AggregateStats` |
+| `lib/src/host/host_loop.dart` | `HostLoop`: plánování hosta – deadliny a záměry botů v pořadí herního času, lidské commandy se zařadí podle příchodu. Sdílí ho CLI sim i `HostSession` v appce |
+| `lib/src/sim/` | `Simulation` (headless host nad `HostLoop`, diskrétní čas) + `GameStats`/`AggregateStats` |
 | `bin/sim.dart` | CLI |
 
 ## Principy (z plánu §4)
@@ -49,7 +50,7 @@ a většina je parametr v `RulesConfig`.
    akční karty cíl nemění. Bomba se nikdy nedostane do ruky: když ji někdo dobere, *vynoří se*
    (a spotřebuje to jedno dobrání). Druhá bomba při aktivní bombě jde na odhazovací hromádku.
    Prázdný deck → zamíchá se odhazovací hromádka.
-2. **Fuse** počítá **dokončené** tahy (platný hod, neplatný hod, timeout) včetně aktuálního; tah, který ho
+2. **Kittens** počítá **dokončené** tahy (platný hod, neplatný hod, timeout) včetně aktuálního; tah, který ho
    srazí na 0, dostane −2. **Předané** tahy (Kradež, Odpal, návrat přes Ne!) fuse netikají → kdo krade,
    přebírá i bombu. Odpal: fuse 1 a cíl je na tahu → když nic neudělá, bouchne po jeho tahu jemu.
 3. **Akční karty hozené na deck:** Otoč a Slepá jsou vždy platné; Zneškodni a Odpal jen při aktivní

@@ -1,4 +1,4 @@
-/// Fuse — pure Dart game core: model, rules, engine, bots, replay, simulation.
+/// Kittens — pure Dart game core: model, rules, engine, bots, replay, simulation.
 library;
 
 export 'src/bots/basic_bot.dart';
@@ -7,6 +7,7 @@ export 'src/clock/game_clock.dart';
 export 'src/commands.dart';
 export 'src/engine/game_engine.dart' show EngineStep, GameEngine, RejectReason;
 export 'src/events.dart';
+export 'src/host/host_loop.dart';
 export 'src/model/card.dart';
 export 'src/model/game_state.dart';
 export 'src/model/rules_config.dart';

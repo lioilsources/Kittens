@@ -1,0 +1,18 @@
+{
+  "name": "Dva hráči mají Ne!",
+  "description": "Bot 1 odpálí bombu na hráče 2. Zahraj za hráče 2 Ne!, přepni v liště na hráče 3 a zahraj i jeho Ne!. Platí první, druhé propadne.",
+  "viewAs": "p2",
+  "speed": 0.3,
+  "seed": 5,
+  "seats": [
+    {"id": "p1", "name": "Bot 1", "mode": "bot", "reaction": "slow"},
+    {"id": "p2", "name": "Hráč 2", "mode": "human"},
+    {"id": "p3", "name": "Hráč 3", "mode": "human"}
+  ],
+  "commands": [
+    {"type": "debugGiveCard", "playerId": "p1", "code": "DETONATE", "serverTs": 0},
+    {"type": "debugGiveCard", "playerId": "p2", "code": "NOPE", "serverTs": 0},
+    {"type": "debugGiveCard", "playerId": "p3", "code": "NOPE", "serverTs": 0},
+    {"type": "debugSetBomb", "fuse": 1, "serverTs": 0}
+  ]
+}

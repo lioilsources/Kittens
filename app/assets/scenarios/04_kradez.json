@@ -1,0 +1,17 @@
+{
+  "name": "Kradež",
+  "description": "Hráč 1 je pozastavený a jen váhá. Až doutnák zčervená (po 2 s), přetáhni Kradež na jeho avatar a pak hoď červenou pětku.",
+  "viewAs": "p2",
+  "speed": 0.7,
+  "seed": 13,
+  "seats": [
+    {"id": "p1", "name": "Váhavec", "mode": "paused"},
+    {"id": "p2", "name": "Ty", "mode": "human"},
+    {"id": "p3", "name": "Bot", "mode": "bot", "reaction": "slow"}
+  ],
+  "commands": [
+    {"type": "debugSetTarget", "code": "R1", "serverTs": 0},
+    {"type": "debugGiveCard", "playerId": "p2", "code": "STEAL", "serverTs": 0},
+    {"type": "debugGiveCard", "playerId": "p2", "code": "R5", "serverTs": 0}
+  ]
+}

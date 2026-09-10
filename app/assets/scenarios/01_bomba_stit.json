@@ -1,0 +1,18 @@
+{
+  "name": "Bomba na mně, mám Štít",
+  "description": "Jsi na tahu a bomba s fuse 1 vybuchne na konci tvého tahu. Hoď červenou pětku a hned táhni Štít do strany: do 1 s zachráníš jeden ze dvou životů.",
+  "viewAs": "p1",
+  "speed": 0.6,
+  "seed": 21,
+  "seats": [
+    {"id": "p1", "name": "Ty", "mode": "human"},
+    {"id": "p2", "name": "Bot 1", "mode": "bot", "reaction": "slow"},
+    {"id": "p3", "name": "Bot 2", "mode": "bot", "reaction": "slow"}
+  ],
+  "commands": [
+    {"type": "debugSetTarget", "code": "R1", "serverTs": 0},
+    {"type": "debugGiveCard", "playerId": "p1", "code": "R5", "serverTs": 0},
+    {"type": "debugGiveCard", "playerId": "p1", "code": "SHIELD", "serverTs": 0},
+    {"type": "debugSetBomb", "fuse": 1, "serverTs": 0}
+  ]
+}

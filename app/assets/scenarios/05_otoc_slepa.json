@@ -1,0 +1,19 @@
+{
+  "name": "Otoč a Slepá",
+  "description": "Otoč mění shodu na číslo ±1 bez ohledu na barvu. Slepá skryje cíl na dva tahy. Vyzkoušej obě na pomalých botech.",
+  "viewAs": "p1",
+  "speed": 0.7,
+  "seed": 34,
+  "seats": [
+    {"id": "p1", "name": "Ty", "mode": "human"},
+    {"id": "p2", "name": "Bot 1", "mode": "bot", "reaction": "slow"},
+    {"id": "p3", "name": "Bot 2", "mode": "bot", "reaction": "slow"}
+  ],
+  "commands": [
+    {"type": "debugSetTarget", "code": "R3", "serverTs": 0},
+    {"type": "debugGiveCard", "playerId": "p1", "code": "TWIST", "serverTs": 0},
+    {"type": "debugGiveCard", "playerId": "p1", "code": "BLIND", "serverTs": 0},
+    {"type": "debugGiveCard", "playerId": "p1", "code": "G4", "serverTs": 0},
+    {"type": "debugGiveCard", "playerId": "p1", "code": "B2", "serverTs": 0}
+  ]
+}
