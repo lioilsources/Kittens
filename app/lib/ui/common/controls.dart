@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:fuse_core/fuse_core.dart';
+import 'package:intl/intl.dart';
 
+import '../../l10n/l10n.dart';
 import '../../session/seat.dart';
 import '../theme.dart';
 
@@ -116,7 +118,7 @@ class SeatModeSelector extends StatelessWidget {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          m.labelCs,
+                          context.l10n.seatModeName(m),
                           style: TextStyle(
                             fontWeight: FontWeight.w600,
                             color: m == value ? Palette.ink : Palette.text,
@@ -149,7 +151,10 @@ class BotSettings extends StatelessWidget {
           value: seat.iq,
           items: [
             for (final iq in BotIq.values)
-              DropdownMenuItem(value: iq, child: Text(iq.labelCs)),
+              DropdownMenuItem(
+                value: iq,
+                child: Text(context.l10n.botIqName(iq)),
+              ),
           ],
           onChanged: (v) {
             if (v != null) onChanged(seat.copyWith(iq: v));
@@ -165,7 +170,7 @@ class BotSettings extends StatelessWidget {
             for (final r in ReactionPreset.values)
               DropdownMenuItem(
                 value: r,
-                child: Text('Reakce ${r.labelCs.toLowerCase()}'),
+                child: Text(context.l10n.reactionName(r)),
               ),
           ],
           onChanged: (v) {
@@ -177,9 +182,5 @@ class BotSettings extends StatelessWidget {
   );
 }
 
-/// `0,25×`, `1×`
-String factor(double value) {
-  var s = value.toStringAsFixed(2);
-  s = s.replaceFirst(RegExp(r'\.?0+$'), '');
-  return '${s.replaceAll('.', ',')}×';
-}
+/// `0,25×`, `1×` — locale-aware decimal separator, see [seconds].
+String factor(double value) => '${NumberFormat('0.##').format(value)}×';

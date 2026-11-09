@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fuse_core/fuse_core.dart';
 
+import '../../l10n/l10n.dart';
 import '../../session/scenario.dart';
 import '../../session/seat.dart';
 import '../../state/providers.dart';
@@ -49,7 +50,7 @@ class _DebugPanelState extends ConsumerState<DebugPanel> {
 
   Future<void> _copyReplay(Replay replay) async {
     await Clipboard.setData(ClipboardData(text: replay.encode()));
-    if (mounted) _snack('Replay je ve schránce');
+    if (mounted) _snack(context.l10n.replayCopied);
   }
 
   Future<void> _pasteReplay() async {
@@ -59,11 +60,12 @@ class _DebugPanelState extends ConsumerState<DebugPanel> {
     try {
       replay = Replay.decode(data?.text ?? '');
     } on Object {
-      _snack('Ve schránce není replay Kittens');
+      _snack(context.l10n.noReplayInClipboard);
       return;
     }
+    final title = context.l10n.replayTitle;
     Navigator.of(context).pop();
-    ref.read(sessionProvider.notifier).loadReplay(replay);
+    ref.read(sessionProvider.notifier).loadReplay(replay, title: title);
   }
 
   @override
@@ -83,31 +85,35 @@ class _DebugPanelState extends ConsumerState<DebugPanel> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
           children: [
-            const SectionHeading('Čas'),
+            SectionHeading(context.l10n.sectionTime),
             Row(
               children: [
                 FilledButton.tonalIcon(
                   onPressed: update.paused ? host.resume : host.pause,
                   icon: Icon(update.paused ? Icons.play_arrow : Icons.pause),
-                  label: Text(update.paused ? 'Pokračovat' : 'Pozastavit'),
+                  label: Text(
+                    update.paused ? context.l10n.resume : context.l10n.pause,
+                  ),
                 ),
                 const SizedBox(width: 8),
                 OutlinedButton.icon(
                   onPressed: host.step,
                   icon: const Icon(Icons.skip_next),
-                  label: const Text('Krok'),
+                  label: Text(context.l10n.step),
                 ),
               ],
             ),
             const SizedBox(height: 6),
             Text(
-              'Herní čas ${seconds(host.clock.nowMs, digits: 2)}, '
-              'kolo ${state.round + 1}',
+              context.l10n.gameClock(
+                seconds(host.clock.nowMs, digits: 2),
+                state.round + 1,
+              ),
               style: _small,
             ),
             const SizedBox(height: 8),
             LabeledSlider(
-              label: 'Rychlost hry',
+              label: context.l10n.gameSpeed,
               valueText: factor(update.speed),
               value: update.speed,
               min: 0.1,
@@ -116,7 +122,7 @@ class _DebugPanelState extends ConsumerState<DebugPanel> {
               onChanged: host.setSpeed,
             ),
             LabeledSlider(
-              label: 'Umělá latence',
+              label: context.l10n.artificialLatency,
               valueText: '${session.network.latency.inMilliseconds} ms',
               value: session.network.latency.inMilliseconds.toDouble(),
               min: 0,
@@ -129,16 +135,13 @@ class _DebugPanelState extends ConsumerState<DebugPanel> {
             ),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('Pohled sleduje hráče na tahu'),
-              subtitle: const Text(
-                'Jen místa ovládaná člověkem',
-                style: _small,
-              ),
+              title: Text(context.l10n.followTurn),
+              subtitle: Text(context.l10n.followTurnHint, style: _small),
               value: puppet.autoFollow,
               onChanged: ref.read(puppetProvider.notifier).setAutoFollow,
             ),
 
-            const SectionHeading('Hráči'),
+            SectionHeading(context.l10n.sectionPlayers),
             for (final p in state.players)
               _SeatEditor(
                 seat: update.seats[p.id]!,
@@ -150,7 +153,7 @@ class _DebugPanelState extends ConsumerState<DebugPanel> {
                 ),
               ),
 
-            const SectionHeading('Vnutit kartu'),
+            SectionHeading(context.l10n.sectionForceCard),
             Row(
               children: [
                 DropdownButton<String>(
@@ -169,7 +172,10 @@ class _DebugPanelState extends ConsumerState<DebugPanel> {
                     items: [
                       for (final k in CardKind.values)
                         if (k != CardKind.bomb)
-                          DropdownMenuItem(value: k, child: Text(k.nameCs)),
+                          DropdownMenuItem(
+                            value: k,
+                            child: Text(context.l10n.kindName(k)),
+                          ),
                     ],
                     onChanged: (v) => setState(() => _kind = v ?? _kind),
                   ),
@@ -191,7 +197,7 @@ class _DebugPanelState extends ConsumerState<DebugPanel> {
                 onSelectionChanged: (s) => setState(() => _color = s.first),
               ),
               LabeledSlider(
-                label: 'Číslo',
+                label: context.l10n.number,
                 valueText: '${_number.round()}',
                 value: _number,
                 min: 1,
@@ -208,18 +214,18 @@ class _DebugPanelState extends ConsumerState<DebugPanel> {
                   onPressed: () => host.debug(
                     DebugGiveCard(playerId: giveTo, code: _code, serverTs: 0),
                   ),
-                  child: const Text('Dát do ruky'),
+                  child: Text(context.l10n.giveToHand),
                 ),
                 if (_kind == CardKind.number)
                   OutlinedButton(
                     onPressed: () =>
                         host.debug(DebugSetTarget(code: _code, serverTs: 0)),
-                    child: const Text('Nastavit jako cíl'),
+                    child: Text(context.l10n.setAsTarget),
                   ),
               ],
             ),
 
-            const SectionHeading('Bomba a limit tahu'),
+            SectionHeading(context.l10n.sectionBombAndLimit),
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -227,19 +233,19 @@ class _DebugPanelState extends ConsumerState<DebugPanel> {
                 OutlinedButton(
                   onPressed: () =>
                       host.debug(const DebugSetBomb(fuse: null, serverTs: 0)),
-                  child: const Text('Bez bomby'),
+                  child: Text(context.l10n.noBomb),
                 ),
                 for (final fuse in [1, 2, 3])
                   OutlinedButton(
                     onPressed: () =>
                         host.debug(DebugSetBomb(fuse: fuse, serverTs: 0)),
-                    child: Text('Fuse $fuse'),
+                    child: Text(context.l10n.fuseValue(fuse)),
                   ),
               ],
             ),
             const SizedBox(height: 8),
             LabeledSlider(
-              label: 'Limit v 1. kole (teď ${seconds(state.turn.limitMs)})',
+              label: context.l10n.turnLimitNow(seconds(state.turn.limitMs)),
               valueText: seconds(limit.round()),
               value: limit,
               min: 800,
@@ -252,7 +258,7 @@ class _DebugPanelState extends ConsumerState<DebugPanel> {
               },
             ),
 
-            const SectionHeading('Replay'),
+            SectionHeading(context.l10n.replayTitle),
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -260,17 +266,17 @@ class _DebugPanelState extends ConsumerState<DebugPanel> {
                 OutlinedButton.icon(
                   onPressed: () => _copyReplay(host.replay),
                   icon: const Icon(Icons.copy),
-                  label: const Text('Kopírovat replay'),
+                  label: Text(context.l10n.copyReplay),
                 ),
                 OutlinedButton.icon(
                   onPressed: _pasteReplay,
                   icon: const Icon(Icons.content_paste),
-                  label: const Text('Načíst ze schránky'),
+                  label: Text(context.l10n.loadFromClipboard),
                 ),
               ],
             ),
 
-            const SectionHeading('Scénáře'),
+            SectionHeading(context.l10n.sectionScenarios),
             FutureBuilder<List<Scenario>>(
               future: _scenarios,
               builder: (context, snapshot) => Column(
@@ -294,7 +300,7 @@ class _DebugPanelState extends ConsumerState<DebugPanel> {
               ),
             ),
 
-            const SectionHeading('Události'),
+            SectionHeading(context.l10n.sectionEvents),
             for (final e in host.game.events.reversed.take(80))
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 1),
@@ -306,7 +312,7 @@ class _DebugPanelState extends ConsumerState<DebugPanel> {
                 Navigator.of(context).pop();
                 ref.read(sessionProvider.notifier).quit();
               },
-              child: const Text('Ukončit hru'),
+              child: Text(context.l10n.endGame),
             ),
           ],
         ),
@@ -333,7 +339,7 @@ class _SeatEditor extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
     margin: const EdgeInsets.only(bottom: 10),
-    padding: const EdgeInsets.fromLTRB(12, 4, 8, 8),
+    padding: const EdgeInsetsDirectional.fromSTEB(12, 4, 8, 8),
     decoration: BoxDecoration(
       border: Border.all(color: Palette.tableLine),
       borderRadius: BorderRadius.circular(12),
@@ -349,7 +355,7 @@ class _SeatEditor extends StatelessWidget {
             ),
             const Spacer(),
             IconButton(
-              tooltip: 'Ubrat život',
+              tooltip: context.l10n.removeLife,
               onPressed: player.lives > 0
                   ? () => onLives(player.lives - 1)
                   : null,
@@ -357,7 +363,7 @@ class _SeatEditor extends StatelessWidget {
             ),
             Text('${player.lives}'),
             IconButton(
-              tooltip: 'Přidat život',
+              tooltip: context.l10n.addLife,
               onPressed: player.lives < maxLives
                   ? () => onLives(player.lives + 1)
                   : null,

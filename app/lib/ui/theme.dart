@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fuse_core/fuse_core.dart';
+import 'package:intl/intl.dart';
 
 /// Matchbox-label palette: ink-blue table, kraft card stock, sulfur and
 /// match-head red for everything that burns.
@@ -95,5 +96,7 @@ ThemeData buildTheme() {
   );
 }
 
+/// `1,5 s` — decimal separator follows [Intl.defaultLocale], which the app
+/// keeps in sync with the active UI locale.
 String seconds(int ms, {int digits = 1}) =>
-    '${(ms / 1000).toStringAsFixed(digits).replaceAll('.', ',')} s';
+    '${NumberFormat.decimalPatternDigits(decimalDigits: digits).format(ms / 1000)} s';

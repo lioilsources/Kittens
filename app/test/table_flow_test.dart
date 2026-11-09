@@ -27,6 +27,9 @@ Future<ProviderContainer> _startTable(WidgetTester tester, Scenario s) async {
     ..physicalSize = const Size(1179, 2556)
     ..devicePixelRatio = 3;
   addTearDown(tester.view.reset);
+  // The tests match the Czech source strings.
+  tester.platformDispatcher.localesTestValue = const [Locale('cs')];
+  addTearDown(tester.platformDispatcher.clearLocalesTestValue);
   final container = ProviderContainer();
   addTearDown(container.dispose);
   await tester.pumpWidget(

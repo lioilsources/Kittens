@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fuse_core/fuse_core.dart';
 
+import '../../l10n/l10n.dart';
 import '../../session/seat.dart';
 import '../theme.dart';
 
@@ -152,7 +153,7 @@ class _SeatAvatarState extends State<SeatAvatar>
         ),
         const SizedBox(height: 4),
         Text(
-          ghost ? '${seat.name} (duch)' : seat.name,
+          ghost ? context.l10n.ghostName(seat.name) : seat.name,
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w600,

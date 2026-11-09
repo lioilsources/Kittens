@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart' hide Card;
 import 'package:fuse_core/fuse_core.dart';
 
+import '../l10n/l10n.dart';
 import 'theme.dart';
 
 const cardAspect = 1.42;
@@ -128,7 +129,7 @@ class _SpecialFace extends StatelessWidget {
           child: FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
-              kind.nameCs,
+              context.l10n.kindName(kind),
               style: TextStyle(
                 fontFamily: displayFont,
                 fontSize: width * 0.19,
