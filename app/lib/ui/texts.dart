@@ -1,25 +1,28 @@
 import 'package:fuse_core/fuse_core.dart';
 
+import '../l10n/l10n.dart';
 import 'theme.dart';
 
 /// Why the host refused a command, in the player's words.
-String rejectText(String reason, RulesConfig rules) => switch (reason) {
-  RejectReason.notYourTurn => 'Nejsi na tahu',
-  RejectReason.cardNotInHand => 'Tuhle kartu už nemáš',
-  RejectReason.invalidTarget => 'Na tohoto hráče to nejde',
-  RejectReason.notAReaction => 'Tahle karta se hází na balíček',
-  RejectReason.ghost => 'Duch může hrát jen Ne!',
-  RejectReason.notGhost => 'Ne! bez karty má jen duch',
-  RejectReason.ghostNopeUsed => 'Ne! ducha už v tomhle kole padlo',
-  RejectReason.ghostNeedsCard => 'Duch potřebuje kartu Ne!',
-  RejectReason.nothingToNope => 'Není co zrušit',
-  RejectReason.noPendingLoss => 'Štít už nestihneš',
-  RejectReason.ownTurn => 'Svůj vlastní tah ukrást nejde',
-  RejectReason.tooEarly =>
-    'Krást jde až po ${seconds(rules.stealThresholdMs)} váhání',
-  RejectReason.gameOver => 'Hra skončila',
-  _ => 'Příkaz odmítnut',
-};
+String rejectText(AppLocalizations l, String reason, RulesConfig rules) =>
+    switch (reason) {
+      RejectReason.notYourTurn => l.rejectNotYourTurn,
+      RejectReason.cardNotInHand => l.rejectCardNotInHand,
+      RejectReason.invalidTarget => l.rejectInvalidTarget,
+      RejectReason.notAReaction => l.rejectNotAReaction,
+      RejectReason.ghost => l.rejectGhost,
+      RejectReason.notGhost => l.rejectNotGhost,
+      RejectReason.ghostNopeUsed => l.rejectGhostNopeUsed,
+      RejectReason.ghostNeedsCard => l.rejectGhostNeedsCard,
+      RejectReason.nothingToNope => l.rejectNothingToNope,
+      RejectReason.noPendingLoss => l.rejectNoPendingLoss,
+      RejectReason.ownTurn => l.rejectOwnTurn,
+      RejectReason.tooEarly => l.rejectTooEarly(
+        seconds(rules.stealThresholdMs),
+      ),
+      RejectReason.gameOver => l.rejectGameOver,
+      _ => l.rejectOther,
+    };
 
 String? commandOwner(Command command) => switch (command) {
   PlayCard(:final playerId) ||
@@ -29,25 +32,47 @@ String? commandOwner(Command command) => switch (command) {
 };
 
 /// One-line description of what just happened at the table.
-String? captionFor(GameEvent e, String Function(String id) name) => switch (e) {
+String? captionFor(
+  AppLocalizations l,
+  GameEvent e,
+  String Function(String id) name,
+) => switch (e) {
   CardThrown(:final playerId, :final card, :final throwMs, :final draw) =>
-    '${name(playerId)}: ${card.labelCs} za ${seconds(throwMs, digits: 2)}'
-        '${draw > 0 ? ', bere $draw' : ''}',
-  InvalidThrow(:final playerId, :final card) =>
-    '${name(playerId)}: ${card.labelCs} neplatí',
-  TurnTimedOut(:final playerId) => '${name(playerId)}: čas vypršel',
-  TurnStolen(:final byPlayerId, :final fromPlayerId) =>
-    '${name(byPlayerId)}: Kradež tahu (${name(fromPlayerId)})',
-  ActionNoped(:final byPlayerId, :final actionKind) =>
-    '${name(byPlayerId)}: Ne! na ${actionKind.nameCs}',
-  NopeFizzled(:final playerId) => '${name(playerId)}: Ne! propadlo',
+    draw > 0
+        ? l.captionThrownDraw(
+            name(playerId),
+            l.cardLabel(card),
+            seconds(throwMs, digits: 2),
+            draw,
+          )
+        : l.captionThrown(
+            name(playerId),
+            l.cardLabel(card),
+            seconds(throwMs, digits: 2),
+          ),
+  InvalidThrow(:final playerId, :final card) => l.captionInvalid(
+    name(playerId),
+    l.cardLabel(card),
+  ),
+  TurnTimedOut(:final playerId) => l.captionTimedOut(name(playerId)),
+  TurnStolen(:final byPlayerId, :final fromPlayerId) => l.captionStolen(
+    name(byPlayerId),
+    name(fromPlayerId),
+  ),
+  ActionNoped(:final byPlayerId, :final actionKind) => l.captionNoped(
+    name(byPlayerId),
+    l.kindName(actionKind),
+  ),
+  NopeFizzled(:final playerId) => l.captionNopeFizzled(name(playerId)),
   BombSurfaced(:final drawnBy, :final fuse) when drawnBy != null =>
-    'Bomba se vynořila, fuse $fuse',
-  BombExploded(:final playerId) => 'Bomba vybuchla: ${name(playerId)}',
-  BombDefused(:final playerId) => '${name(playerId)}: Zneškodni',
-  BombRedirected(:final playerId, :final targetPlayerId) =>
-    '${name(playerId)}: Odpal na ${name(targetPlayerId)}',
-  ShieldUsed(:final playerId) => '${name(playerId)}: Štít',
-  PlayerBecameGhost(:final playerId) => '${name(playerId)} je duch',
+    l.captionBombSurfaced(fuse),
+  BombExploded(:final playerId) => l.captionBombExploded(name(playerId)),
+  BombDefused(:final playerId) => l.captionDefused(name(playerId)),
+  BombRedirected(:final playerId, :final targetPlayerId) => l.captionRedirected(
+    name(playerId),
+    name(targetPlayerId),
+  ),
+  ShieldUsed(:final playerId) => l.captionShield(name(playerId)),
+  PlayerBecameGhost(:final playerId) => l.captionGhost(name(playerId)),
   _ => null,
 };

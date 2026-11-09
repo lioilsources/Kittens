@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart' hide Card;
 import 'package:fuse_core/fuse_core.dart';
 
+import '../../l10n/l10n.dart';
 import '../card_face.dart';
 import '../theme.dart';
 import 'fuse_ring.dart';
@@ -108,7 +109,7 @@ class BombBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Semantics(
-    label: 'Bomba, zbývá $fuse tahů',
+    label: context.l10n.bombTurnsLeft(fuse),
     child: Container(
       width: 42,
       height: 42,

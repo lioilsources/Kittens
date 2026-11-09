@@ -2,34 +2,21 @@ import 'package:fuse_core/fuse_core.dart';
 
 /// Who plays a seat in puppet mode (plan §6.2).
 enum SeatMode {
-  human('Člověk'),
-  bot('Bot'),
+  human,
+  bot,
 
   /// Nobody plays it; the clock runs out unless you throw for it by hand.
-  paused('Pauza');
-
-  const SeatMode(this.labelCs);
-
-  final String labelCs;
+  paused,
 }
 
 enum ReactionPreset {
-  fast('0,5 s', FixedReaction(500)),
-  slow('1,5 s', FixedReaction(1500)),
-  random('Náhodně', UniformReaction(300, 1500));
+  fast(FixedReaction(500)),
+  slow(FixedReaction(1500)),
+  random(UniformReaction(300, 1500));
 
-  const ReactionPreset(this.labelCs, this.model);
+  const ReactionPreset(this.model);
 
-  final String labelCs;
   final ReactionModel model;
-}
-
-extension BotIqLabel on BotIq {
-  String get labelCs => switch (this) {
-    BotIq.smart => 'Hraje chytře',
-    BotIq.firstValid => 'První platná',
-    BotIq.sloppy => 'Chybuje 20 %',
-  };
 }
 
 final class SeatConfig {

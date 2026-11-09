@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fuse_core/fuse_core.dart';
 
+import '../../l10n/l10n.dart';
 import '../../session/puppet_session.dart';
 import '../../session/scenario.dart';
 import '../../session/seat.dart';
@@ -36,6 +37,14 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
     DefaultAssetBundle.of(context),
   );
 
+  /// Default seat names are stored as ids so they follow the UI language;
+  /// the localized name is baked in only when the game starts.
+  static String _seatName(BuildContext context, SeatConfig seat) {
+    final l = context.l10n;
+    if (seat.id == 'p1') return l.seatYou;
+    return l.botName(int.parse(seat.id.substring(1)) - 1);
+  }
+
   void _start() {
     const base = RulesConfig();
     final limit = _limit.round();
@@ -43,7 +52,10 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
         .read(sessionProvider.notifier)
         .startNew(
           NewGameConfig(
-            seats: _seats.take(_count).toList(),
+            seats: [
+              for (final s in _seats.take(_count))
+                s.copyWith(name: _seatName(context, s)),
+            ],
             seed: DateTime.now().millisecondsSinceEpoch % 1000000,
             speed: _speed,
             rules: base.copyWith(
@@ -62,11 +74,14 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
     try {
       ref
           .read(sessionProvider.notifier)
-          .loadReplay(Replay.decode(data?.text ?? ''));
+          .loadReplay(
+            Replay.decode(data?.text ?? ''),
+            title: context.l10n.replayTitle,
+          );
     } on Object {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ve schránce není replay Kittens')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(context.l10n.noReplayInClipboard)));
     }
   }
 
@@ -89,14 +104,11 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
-                'Hoď správnou kartu dřív, než dohoří doutnák.',
-                style: TextStyle(fontSize: 16),
-              ),
+              Text(context.l10n.tagline, style: const TextStyle(fontSize: 16)),
               const SizedBox(height: 8),
               Row(
                 children: [
-                  const Expanded(child: SectionHeading('Hráči')),
+                  Expanded(child: SectionHeading(context.l10n.sectionPlayers)),
                   SegmentedButton<int>(
                     segments: [
                       for (var n = 2; n <= 5; n++)
@@ -120,7 +132,7 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Text(
-                        _seats[i].name,
+                        _seatName(context, _seats[i]),
                         style: const TextStyle(
                           fontFamily: displayFont,
                           fontSize: 16,
@@ -141,9 +153,9 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
                     ],
                   ),
                 ),
-              const SectionHeading('Pravidla'),
+              SectionHeading(context.l10n.sectionRules),
               LabeledSlider(
-                label: 'Limit tahu v 1. kole',
+                label: context.l10n.ruleTurnLimit,
                 valueText: seconds(_limit.round()),
                 value: _limit,
                 min: 1500,
@@ -152,7 +164,7 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
                 onChanged: (v) => setState(() => _limit = v),
               ),
               LabeledSlider(
-                label: 'Rychlý hod bez dobírání do',
+                label: context.l10n.ruleFastThrow,
                 valueText: seconds(_fast.round()),
                 value: _fast,
                 min: 500,
@@ -161,7 +173,7 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
                 onChanged: (v) => setState(() => _fast = v),
               ),
               LabeledSlider(
-                label: 'Kradež po váhání delším než',
+                label: context.l10n.ruleSteal,
                 valueText: seconds(_steal.round()),
                 value: _steal,
                 min: 1000,
@@ -170,7 +182,7 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
                 onChanged: (v) => setState(() => _steal = v),
               ),
               LabeledSlider(
-                label: 'Rychlost hry',
+                label: context.l10n.gameSpeed,
                 valueText: factor(_speed),
                 value: _speed,
                 min: 0.25,
@@ -184,15 +196,18 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
                 style: FilledButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 18),
                 ),
-                child: const Text('Hrát', style: TextStyle(fontSize: 18)),
+                child: Text(
+                  context.l10n.play,
+                  style: const TextStyle(fontSize: 18),
+                ),
               ),
               const SizedBox(height: 6),
               TextButton.icon(
                 onPressed: _paste,
                 icon: const Icon(Icons.content_paste),
-                label: const Text('Načíst replay ze schránky'),
+                label: Text(context.l10n.loadReplayFromClipboard),
               ),
-              const SectionHeading('Scénáře'),
+              SectionHeading(context.l10n.sectionScenarios),
               FutureBuilder<List<Scenario>>(
                 future: _scenarios,
                 builder: (context, snapshot) => Column(

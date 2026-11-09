@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../l10n/l10n.dart';
 import '../../session/seat.dart';
 import '../../state/providers.dart';
 import '../theme.dart';
@@ -18,7 +19,7 @@ class PuppetBar extends ConsumerWidget {
     if (host == null) return const SizedBox.shrink();
     final state = host.state;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 6, 4, 0),
+      padding: const EdgeInsetsDirectional.fromSTEB(8, 6, 4, 0),
       child: Row(
         children: [
           Expanded(
@@ -42,14 +43,14 @@ class PuppetBar extends ConsumerWidget {
             ),
           ),
           IconButton(
-            tooltip: host.paused ? 'Pokračovat' : 'Pozastavit',
+            tooltip: host.paused ? context.l10n.resume : context.l10n.pause,
             onPressed: () => host.paused
                 ? ref.read(sessionProvider)?.host.resume()
                 : ref.read(sessionProvider)?.host.pause(),
             icon: Icon(host.paused ? Icons.play_arrow : Icons.pause),
           ),
           IconButton(
-            tooltip: 'Ladění',
+            tooltip: context.l10n.debug,
             onPressed: () => Scaffold.of(context).openEndDrawer(),
             icon: const Icon(Icons.tune),
           ),
@@ -82,7 +83,7 @@ class _SeatChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final fg = selected ? Palette.ink : Palette.text;
     return Padding(
-      padding: const EdgeInsets.only(right: 6),
+      padding: const EdgeInsetsDirectional.only(end: 6),
       child: Material(
         color: selected ? Palette.stock : Colors.transparent,
         shape: StadiumBorder(

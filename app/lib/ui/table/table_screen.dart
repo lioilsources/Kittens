@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fuse_core/fuse_core.dart';
 
+import '../../l10n/l10n.dart';
 import '../../session/client_session.dart';
 import '../../session/host_session.dart';
 import '../../session/puppet_session.dart';
@@ -109,7 +110,7 @@ class _TableScreenState extends ConsumerState<TableScreen> {
           return seatCenter(zone.playerId);
         }
         if (zone is DeckZone) {
-          _showToast('Odpal přetáhni na hráče, který dostane bombu');
+          _showToast(context.l10n.hintDetonate);
         }
         return null;
       case CardKind.steal:
@@ -118,7 +119,7 @@ class _TableScreenState extends ConsumerState<TableScreen> {
           return seatCenter(zone.playerId);
         }
         if (zone is! NoZone) {
-          _showToast('Kradež přetáhni na hráče, který je na tahu');
+          _showToast(context.l10n.hintSteal);
         }
         return null;
       case CardKind.nope || CardKind.shield:
@@ -157,37 +158,36 @@ class _TableScreenState extends ConsumerState<TableScreen> {
   void _onSnapshot(ClientSnapshot snap) {
     final view = snap.view;
     final me = view.myId;
+    final l = context.l10n;
     String name(String id) => view.seat(id).name;
     for (final e in snap.events) {
       switch (e) {
         case InvalidThrow(:final playerId) when playerId == me:
           setState(() => _shakeToken++);
           HapticFeedback.heavyImpact();
-          _showToast(
-            'Neplatná karta: přijdeš o život a bereš ${view.rules.drawPenalty}',
-          );
+          _showToast(l.toastInvalidCard(view.rules.drawPenalty));
         case TurnTimedOut(:final playerId) when playerId == me:
           HapticFeedback.heavyImpact();
-          _showToast('Čas vypršel');
+          _showToast(l.toastTimeOut);
         case CommandRejected(:final command, :final reason)
             when commandOwner(command) == me:
           HapticFeedback.lightImpact();
-          _showToast(rejectText(reason, view.rules));
+          _showToast(rejectText(l, reason, view.rules));
         case LifeLossPending(:final loss)
             when loss.playerId == me &&
                 view.cardsOf(CardKind.shield).isNotEmpty:
-          _showToast('Štít do ${seconds(view.rules.shieldWindowMs)}!');
+          _showToast(l.toastShieldWindow(seconds(view.rules.shieldWindowMs)));
         case TurnStolen(:final fromPlayerId, :final byPlayerId)
             when fromPlayerId == me:
           HapticFeedback.mediumImpact();
-          _showToast('${name(byPlayerId)}: Kradež tvého tahu');
+          _showToast(l.toastTurnStolen(name(byPlayerId)));
         case BombRedirected(:final playerId, :final targetPlayerId)
             when targetPlayerId == me:
           HapticFeedback.heavyImpact();
-          _showToast('${name(playerId)} na tebe odpálil bombu');
+          _showToast(l.toastBombOnYou(name(playerId)));
         case TurnStarted(:final playerId, :final reason)
             when playerId == me && reason == TurnStartReason.nopeRevert:
-          _showToast('Ne! vrací tah k tobě');
+          _showToast(l.toastNopeReturns);
         default:
           break;
       }
@@ -197,7 +197,7 @@ class _TableScreenState extends ConsumerState<TableScreen> {
   void _onHost(HostUpdate update) {
     String name(String id) => update.state.player(id).name;
     for (final e in update.events.reversed) {
-      final caption = captionFor(e, name);
+      final caption = captionFor(context.l10n, e, name);
       if (caption != null) {
         setState(() => _caption = caption);
         return;
@@ -358,8 +358,8 @@ class _TableScreenState extends ConsumerState<TableScreen> {
                 view.isOver
                     ? ''
                     : view.isMyTurn
-                    ? 'Tvůj tah'
-                    : 'Na tahu: $onTurnName',
+                    ? context.l10n.yourTurn
+                    : context.l10n.onTurn(onTurnName),
                 style: TextStyle(
                   fontFamily: displayFont,
                   fontSize: 17,
@@ -368,7 +368,7 @@ class _TableScreenState extends ConsumerState<TableScreen> {
               ),
               const SizedBox(height: 2),
               Text(
-                _caption ?? 'Balíček ${view.deckCount}',
+                _caption ?? context.l10n.deckCount(view.deckCount),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(fontSize: 13, color: Palette.muted),
@@ -465,7 +465,7 @@ class _MyRow extends StatelessWidget {
     return Row(
       children: [
         Text(
-          me.isGhost ? '${me.name} (duch)' : me.name,
+          me.isGhost ? context.l10n.ghostName(me.name) : me.name,
           style: TextStyle(
             fontFamily: displayFont,
             fontSize: 15,
@@ -496,7 +496,7 @@ class _MyRow extends StatelessWidget {
         if (me.isGhost)
           FilledButton.tonal(
             onPressed: ghostNope ? client.ghostNope : null,
-            child: const Text('Ne! ducha'),
+            child: Text(context.l10n.ghostNope),
           ),
       ],
     );
@@ -605,10 +605,13 @@ class _StartOverlay extends StatelessWidget {
               ),
               const SizedBox(height: 12),
             ],
-            const Text(
-              'Hoď kartu stejné barvy nebo čísla přes čáru nad balíčkem. '
-              'Ne! a Štít táhni do strany, Odpal a Kradež na hráče.',
-              style: TextStyle(fontSize: 14, height: 1.4, color: Palette.muted),
+            Text(
+              context.l10n.startHelp,
+              style: const TextStyle(
+                fontSize: 14,
+                height: 1.4,
+                color: Palette.muted,
+              ),
             ),
             const SizedBox(height: 24),
             SizedBox(
@@ -618,7 +621,10 @@ class _StartOverlay extends StatelessWidget {
                 style: FilledButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
-                child: const Text('Začít', style: TextStyle(fontSize: 18)),
+                child: Text(
+                  context.l10n.start,
+                  style: const TextStyle(fontSize: 18),
+                ),
               ),
             ),
           ],
@@ -652,10 +658,10 @@ class _GameOverOverlay extends ConsumerWidget {
             children: [
               Text(
                 iWon
-                    ? 'Vyhráváš'
+                    ? context.l10n.youWin
                     : winner == null
-                    ? 'Nikdo nepřežil'
-                    : '$winner vyhrává',
+                    ? context.l10n.nobodySurvived
+                    : context.l10n.playerWins(winner!),
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontFamily: displayFont,
@@ -667,7 +673,7 @@ class _GameOverOverlay extends ConsumerWidget {
               if (notifier.canPlayAgain)
                 FilledButton(
                   onPressed: notifier.playAgain,
-                  child: const Text('Hrát znovu'),
+                  child: Text(context.l10n.playAgain),
                 ),
               const SizedBox(height: 8),
               OutlinedButton(
@@ -677,15 +683,15 @@ class _GameOverOverlay extends ConsumerWidget {
                   );
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Replay je ve schránce')),
+                      SnackBar(content: Text(context.l10n.replayCopied)),
                     );
                   }
                 },
-                child: const Text('Kopírovat replay'),
+                child: Text(context.l10n.copyReplay),
               ),
               TextButton(
                 onPressed: notifier.quit,
-                child: const Text('Nastavení hry'),
+                child: Text(context.l10n.gameSettings),
               ),
             ],
           ),

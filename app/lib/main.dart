@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import 'autostart.dart';
+import 'l10n/l10n.dart';
 import 'state/providers.dart';
 import 'ui/setup/setup_screen.dart';
 import 'ui/table/table_screen.dart';
@@ -38,6 +40,13 @@ class _FuseAppState extends ConsumerState<FuseApp> {
     return MaterialApp(
       title: 'Kittens',
       debugShowCheckedModeBanner: false,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      builder: (context, child) {
+        // Number formatting in seconds()/factor() follows the UI locale.
+        Intl.defaultLocale = Localizations.localeOf(context).toLanguageTag();
+        return child!;
+      },
       theme: buildTheme(),
       home: inGame ? const TableScreen() : const SetupScreen(),
     );

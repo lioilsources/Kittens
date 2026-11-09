@@ -54,7 +54,7 @@ class SessionNotifier extends Notifier<PuppetSession?> {
   }
 
   /// Continues a game from an exported replay: you take the first seat.
-  void loadReplay(Replay replay) {
+  void loadReplay(Replay replay, {String title = 'Replay'}) {
     _lastConfig = null;
     _lastScenario = null;
     final players = replay.setup.players;
@@ -69,7 +69,7 @@ class SessionNotifier extends Notifier<PuppetSession?> {
               mode: i == 0 ? SeatMode.human : SeatMode.bot,
             ),
         ],
-        title: 'Replay',
+        title: title,
       ),
     );
   }
